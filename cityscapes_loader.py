@@ -163,12 +163,8 @@ class cityscapesLoader(data.Dataset):
         """
         img, lbl, depth = sample['image'], sample['label'], sample['depth']
 
-        # Rescale
-        img = F.resize(img, (self.img_size[0], self.img_size[1]))
-        lbl = F.resize(lbl, (self.img_size[0], self.img_size[1]), interpolation=Image.NEAREST)
-        depth = F.resize(depth, (self.img_size[0], self.img_size[1]))
-
         # image
+        img = F.resize(img, (self.img_size[0], self.img_size[1]))
         img = np.array(img, dtype=np.uint8)
         img = img[:, :, ::-1]  # RGB -> BGR
         img = img.astype(np.float64)
@@ -179,8 +175,11 @@ class cityscapesLoader(data.Dataset):
             img = img.astype(float) / 255.0
         # NHWC -> NCHW
         img = img.transpose(2, 0, 1)
+        img = torch.from_numpy(img).float()
+
 
         # label
+        lbl = F.resize(lbl, (self.img_size[0], self.img_size[1]), interpolation=Image.NEAREST)
         lbl = self.encode_segmap(np.array(lbl, dtype=np.uint8))
         classes = np.unique(lbl)
         lbl = lbl.astype(int)
@@ -191,16 +190,27 @@ class cityscapesLoader(data.Dataset):
         if not np.all(np.unique(lbl[lbl != self.ignore_index]) < self.n_classes):
             print("after det", classes, np.unique(lbl))
             raise ValueError("Segmentation map contained invalid class values")
+        lbl = torch.from_numpy(lbl).long()
+
 
         # depth
+        depth = F.resize(depth, (self.img_size[0], self.img_size[1]))
         depth = self.decode_depthmap(np.array(depth, dtype=np.float32))
-
-        img = torch.from_numpy(img).float()
-        lbl = torch.from_numpy(lbl).long()
         depth = torch.from_numpy(depth).float()
         depth = torch.unsqueeze(depth, 0)
 
         return {'image': img, 'label': lbl, 'depth': depth}
+
+    def img_recover(self, tensor_img):
+        img = tensor_img.numpy()
+        # CHW -> HWC
+        img = img.transpose(1, 2, 0)
+        if self.img_norm:
+            img = (img * 255.0)
+        img += self.mean
+        img = img[:, :, ::-1]
+        img = np.array(img, dtype=np.uint8)
+        return img
 
     def decode_segmap(self, temp):
         r = temp.copy()
@@ -257,6 +267,7 @@ if __name__ == "__main__":
         f, axarr = plt.subplots(bs, 3)
         for j in range(bs):
             axarr[j][0].imshow(imgs[j])
+            # axarr[j][0].imshow(dst.img_recover(imgs[j]))
             axarr[j][1].imshow(dst.decode_segmap(labels.numpy()[j]))
             axarr[j][2].imshow(dst.encode_depthmap(depth.numpy()[j][0]), cmap='gray')
         plt.show()

@@ -165,7 +165,7 @@ if __name__ == "__main__":
         cfg = yaml.load(fp)
 
     # run_id = random.randint(1, 100000)
-    run_id = 308
+    run_id = 408
     logdir = os.path.join("runs", os.path.basename("config/icnet-seg.yml")[:-4], str(run_id))
     writer = SummaryWriter(log_dir=logdir)
 
