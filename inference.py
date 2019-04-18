@@ -57,8 +57,8 @@ def inference(cfg, writer, logger):
         outputs = outputs.data.max(1)[1]
         for j in range(images.shape[0]):
             writer.add_image('image', testdata.img_recover(images[j]), global_step=i * cfg['training']['batch_size'] + j, dataformats='HWC')
-            writer.add_image('gt', torch.from_numpy(testdata.decode_segmap(labels.numpy()[j])), global_step=i * cfg['training']['batch_size'] + j, dataformats='HWC')
-            writer.add_image('pred', torch.from_numpy(testdata.decode_segmap(outputs.numpy()[j])), global_step=i * cfg['training']['batch_size'] + j, dataformats='HWC')
+            writer.add_image('gt', torch.from_numpy(testdata.decode_segmap(labels.cpu().numpy()[j])), global_step=i * cfg['training']['batch_size'] + j, dataformats='HWC')
+            writer.add_image('pred', torch.from_numpy(testdata.decode_segmap(outputs.cpu().numpy()[j])), global_step=i * cfg['training']['batch_size'] + j, dataformats='HWC')
 
         if i == 10:
             break

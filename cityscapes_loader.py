@@ -202,7 +202,7 @@ class cityscapesLoader(data.Dataset):
         return {'image': img, 'label': lbl, 'depth': depth}
 
     def img_recover(self, tensor_img):
-        img = tensor_img.numpy()
+        img = tensor_img.cpu().numpy()
         # CHW -> HWC
         img = img.transpose(1, 2, 0)
         if self.img_norm:

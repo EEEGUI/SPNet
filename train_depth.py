@@ -13,7 +13,7 @@ from metrics import DepthEstimateScore, averageMeter
 from torch import optim
 from loss import depth_loss
 from utils import get_logger
-from schedulers import ConstantLR
+from schedulers import ConstantLR, PolynomialLR
 from torch.utils import data
 from torchvision.transforms import Compose
 from dataloader import get_train_loader, get_valid_loader, get_test_loader
@@ -48,9 +48,9 @@ def train(cfg, writer, logger):
     model.to(device)
 
     # Setup optimizer, lr_scheduler and loss function
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), **cfg['training']['optimizer'])
 
-    scheduler = ConstantLR(optimizer)
+    scheduler = PolynomialLR(optimizer, cfg['training']['train_iters'])
 
     loss_fn = depth_loss
 
@@ -113,6 +113,7 @@ def train(cfg, writer, logger):
                 print(print_str)
                 logger.info(print_str)
                 writer.add_scalar("loss/train_loss", loss.item(), i + 1)
+                writer.add_scalar('learning-rate', scheduler.get_lr(), i+1)
                 time_meter.reset()
 
             if (i + 1) % cfg["training"]["val_interval"] == 0 or (i + 1) == cfg["training"][
@@ -125,9 +126,9 @@ def train(cfg, writer, logger):
                         labels_val = sample['depth'].to(device)
 
                         outputs = model(images_val)
-                        val_loss = loss_fn(labels_val, outputs[0])
+                        val_loss = loss_fn(labels_val, outputs)
 
-                        scores.update(labels_val.cpu().numpy(), outputs[0].cpu().numpy())
+                        scores.update(labels_val.cpu().numpy(), outputs.cpu().numpy())
                         val_loss_meter.update(val_loss.item())
 
                 writer.add_scalar("loss/val_loss", val_loss_meter.avg, i + 1)
@@ -142,14 +143,14 @@ def train(cfg, writer, logger):
                 val_loss_meter.reset()
                 scores.reset()
 
-                if score["rmse"] >= best_score:
-                    best_iou = score["rmse"]
+                if score["abs_rel"] >= best_score:
+                    best_score = score["abs_rel"]
                     state = {
                         "epoch": i + 1,
                         "model_state": model.state_dict(),
                         "optimizer_state": optimizer.state_dict(),
                         "scheduler_state": scheduler.state_dict(),
-                        "best_iou": best_iou,
+                        "best_iou": best_score,
                     }
                     save_path = os.path.join(
                         writer.file_writer.get_logdir(),
@@ -167,7 +168,7 @@ if __name__ == "__main__":
         cfg = yaml.load(fp)
 
     # run_id = random.randint(1, 100000)
-    run_id = 1103
+    run_id = 418
     logdir = os.path.join("runs", os.path.basename("config/icnet-depth.yaml")[:-4], str(run_id))
     writer = SummaryWriter(log_dir=logdir)
 

@@ -13,7 +13,7 @@ from metrics import runningScore, averageMeter
 from torch import optim
 from loss import multi_scale_cross_entropy2d
 from utils import get_logger, get_multiply_scale_inputs
-from schedulers import ConstantLR
+from schedulers import ConstantLR, PolynomialLR
 from torch.utils import data
 from torchvision.transforms import Compose
 from augmentations import *
@@ -47,9 +47,9 @@ def train(cfg, writer, logger):
     model.to(device)
 
     # Setup optimizer, lr_scheduler and loss function
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), **cfg['training']['optimizer'])
 
-    scheduler = ConstantLR(optimizer)
+    scheduler = PolynomialLR(optimizer, cfg['training']['train_iters'])
 
     loss_fn = multi_scale_cross_entropy2d
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
         cfg = yaml.load(fp)
 
     # run_id = random.randint(1, 100000)
-    run_id = 408
+    run_id = 413
     logdir = os.path.join("runs", os.path.basename("config/icnet-seg.yml")[:-4], str(run_id))
     writer = SummaryWriter(log_dir=logdir)
 
