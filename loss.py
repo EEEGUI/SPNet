@@ -3,6 +3,13 @@ import torch.nn.functional as F
 import pytorch_ssim
 from utils import get_interp_size
 
+def sim_depth_loss(y_true, y_pred):
+    c = 0.2 * torch.max(torch.abs(y_pred-y_true))
+    loss = torch.abs(y_true-y_pred) * (torch.abs(y_pred - y_true) <= c).float() + (torch.pow(y_true-y_pred, 2) + c**2)/(2*c) * (torch.abs(y_pred-y_true) > c).float()
+
+    loss = torch.mean(loss)
+
+    return loss
 
 def depth_loss(y_true, y_pred, theta=0.1, max_depth_val=1000.0 / 10.0):
     if y_true.size()[-1] != y_pred.size()[-1] or y_true.size()[-2] != y_pred.size()[-2]:
