@@ -113,7 +113,7 @@ def train(cfg, writer, logger):
                 print(print_str)
                 logger.info(print_str)
                 writer.add_scalar("loss/train_loss", loss.item(), i + 1)
-                writer.add_scalar('learning-rate', scheduler.get_lr(), i+1)
+                writer.add_scalar('learning-rate', scheduler.get_lr()[0], i+1)
                 time_meter.reset()
 
             if (i + 1) % cfg["training"]["val_interval"] == 0 or (i + 1) == cfg["training"][
