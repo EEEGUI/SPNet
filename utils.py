@@ -582,7 +582,7 @@ class pyramidPooling(nn.Module):
 
             return pp_sum
 
-
+# 带卷积残差模块
 class bottleNeckPSP(nn.Module):
     def __init__(
         self, in_channels, mid_channels, out_channels, stride, dilation=1, is_batchnorm=True
@@ -635,6 +635,7 @@ class bottleNeckPSP(nn.Module):
         return F.relu(conv + residual, inplace=True)
 
 
+# 直连残差模块
 class bottleNeckIdentifyPSP(nn.Module):
     def __init__(self, in_channels, mid_channels, stride, dilation=1, is_batchnorm=True):
         super(bottleNeckIdentifyPSP, self).__init__()

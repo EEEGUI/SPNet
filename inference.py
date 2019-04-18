@@ -30,7 +30,7 @@ def inference(cfg, writer, logger):
     # Setup Model
     model = icnet(n_classes=19)
     model.to(device)
-
+    # model.load_state_dict(torch.load('assets/icnet_cityscapes_train_30k.pth'))
     if cfg["training"]["resume"] is not None:
         if os.path.isfile(cfg["training"]["resume"]):
             logger.info(
@@ -60,7 +60,7 @@ def inference(cfg, writer, logger):
             writer.add_image('gt', torch.from_numpy(testdata.decode_segmap(labels.cpu().numpy()[j])), global_step=i * cfg['training']['batch_size'] + j, dataformats='HWC')
             writer.add_image('pred', torch.from_numpy(testdata.decode_segmap(outputs.cpu().numpy()[j])), global_step=i * cfg['training']['batch_size'] + j, dataformats='HWC')
 
-        if i == 10:
+        if i == 2:
             break
 
 

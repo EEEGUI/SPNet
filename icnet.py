@@ -167,6 +167,7 @@ class icnet(nn.Module):
         # H/8, W/8 -> H/16, W/16
         x_sub2 = self.res_block2(x_sub2)
         x_sub2 = self.res_block3_conv(x_sub2)
+
         # H/16, W/16 -> H/32, W/32
         x_sub4 = F.interpolate(
             x_sub2, size=get_interp_size(x_sub2, s_factor=2), mode="bilinear", align_corners=True
@@ -189,7 +190,8 @@ class icnet(nn.Module):
         x_sub12 = F.interpolate(
             x_sub12, size=get_interp_size(x_sub12, z_factor=2), mode="bilinear", align_corners=True
         )
-        x_sub4 = self.res_block3_identity(x_sub4)
+        # TODO 出现没用分支
+        # x_sub4 = self.res_block3_identity(x_sub4)
         sub124_cls = self.classification(x_sub12)
 
         if self.training:
