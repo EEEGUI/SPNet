@@ -8,7 +8,7 @@ from torch.utils import data
 from utils import recursive_glob
 from torchvision.transforms import Compose
 from torchvision.transforms import functional as F
-from augmentations import  RandomHorizonFlip, RandomRotate
+from augmentations import RandomHorizonFlip, RandomRotate
 
 
 class cityscapesLoader(data.Dataset):

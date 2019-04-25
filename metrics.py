@@ -2,7 +2,6 @@
 # https://github.com/wkentaro/pytorch-fcn/blob/master/torchfcn/utils.py
 
 import numpy as np
-from collections import defaultdict
 
 
 class runningScore(object):

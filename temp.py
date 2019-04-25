@@ -1,13 +1,4 @@
-from icnet import icnet
-import torch
+import torchvision.models as models
 
-model = icnet()
-
-pth = torch.load('assets/icnet_cityscapes_trainval_90k.pth')
-print(pth['model_state'].keys())
-
-pth = torch.load('assets/icnetBN_cityscapes_train_30k.pth')
-print(pth['model_state'].keys())
-
-pth2 = torch.load('assets/depth_cityscapes_best_model.pkl')
-print(pth2['model_state'].keys())
+resnet50 = models.resnet50()
+print(*list(resnet50.children())[:4])

@@ -547,15 +547,23 @@ class pyramidPooling(nn.Module):
     def forward(self, x):
         h, w = x.shape[2:]
 
-        if self.training or self.model_name != "icnet":  # general settings or pspnet
-            k_sizes = []
-            strides = []
-            for pool_size in self.pool_sizes:
-                k_sizes.append((int(h / pool_size), int(w / pool_size)))
-                strides.append((int(h / pool_size), int(w / pool_size)))
-        else:  # eval mode and icnet: pre-trained for 1025 x 2049
-            k_sizes = [(8, 15), (13, 25), (17, 33), (33, 65)]
-            strides = [(5, 10), (10, 20), (16, 32), (33, 65)]
+        # if self.training or self.model_name != "icnet":  # general settings or pspnet
+        #     k_sizes = []
+        #     strides = []
+        #     for pool_size in self.pool_sizes:
+        #         k_sizes.append((int(h / pool_size), int(w / pool_size)))
+        #         strides.append((int(h / pool_size), int(w / pool_size)))
+        # else:  # eval mode and icnet: pre-trained for 1025 x 2049
+        #     k_sizes = [(8, 15), (13, 25), (17, 33), (33, 65)]
+        #     strides = [(5, 10), (10, 20), (16, 32), (33, 65)]
+
+
+        k_sizes = []
+        strides = []
+        for pool_size in self.pool_sizes:
+            k_sizes.append((int(h / pool_size), int(w / pool_size)))
+            strides.append((int(h / pool_size), int(w / pool_size)))
+
 
         if self.fusion_mode == "cat":  # pspnet: concat (including x)
             output_slices = [x]
@@ -884,3 +892,15 @@ def alpha_blend(input_image, segmentation_mask, alpha=0.5):
     blended = np.zeros(input_image.size, dtype=np.float32)
     blended = input_image * alpha + segmentation_mask * (1 - alpha)
     return blended
+
+
+def params_size(net):
+    params = list(net.parameters())
+    k=0
+    for i in params:
+        l = 1
+        for j in i.size():
+            l *= j
+        k += l
+    print("参数量总和：%.4fM" % (k/10**6))
+

@@ -207,6 +207,9 @@ class icnet(nn.Module):
 
 
 if __name__ == "__main__":
+    from utils import params_size
     x = torch.randn((1, 3, 1025, 2049))
     net = icnet()
+    params_size(net)
+    net.eval()
     print(net(x)[0].shape)
